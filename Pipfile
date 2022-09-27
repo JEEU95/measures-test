@@ -1,0 +1,17 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+flask = "*"
+pillow = "*"
+flask-cors = "*"
+gunicorn = "*"
+opencv-contrib-python = "*"
+mediapipe = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.10"
