@@ -397,7 +397,7 @@ def measures_front_view(image):
 
 
     # *************************Bust*************************
-    measures_front['Bust']= distance_points(landmarks['left_shoulder'], landmarks['right_shoulder'])
+    measures_front['Bust']= distance_points(landmarks['left_shoulder'], landmarks['right_shoulder'])/2
 
     
     # ************************Waist************************
@@ -422,11 +422,11 @@ def measures_front_view(image):
     
     waist3=(waist1+waist2)/2 #media entre ambos calculos
 
-    measures_front['Waist']= min([waist1,waist2,waist3]) 
+    measures_front['Waist']= min([waist1,waist2,waist3])/2
 
 
     # ************************Neck************************
-    measures_front['Neck'] = distance_points(landmarks['right_ear'], landmarks['left_ear'])
+    measures_front['Neck'] = distance_points(landmarks['right_ear'], landmarks['left_ear'])/2
     
     
     # ************************Arms************************
@@ -450,14 +450,17 @@ def measures_front_view(image):
     measures_front['Thigh']=(right_thigh+left_thigh)/2
 
     # ************************Legs************************
-    left_ankle = distance_points(landmarks['left_knee'], landmarks['left_ankle'])
-    right_ankle = distance_points(landmarks['right_knee'], landmarks['right_ankle'])
+    """ left_ankle = distance_points(landmarks['left_knee'], landmarks['left_heel'])
+    right_ankle = distance_points(landmarks['right_knee'], landmarks['right_heel'])
     leg1 = (right_ankle+left_ankle) / 2
     leg2 = measures_front['Thigh']
-    leg=leg1+leg2
-
-    measures_front['Leg']=leg
+    leg=leg1+leg2 """
+    leg1=distance_points(landmarks['right_hip'], landmarks['right_heel'])
+    leg2=distance_points(landmarks['left_hip'], landmarks['left_heel'])
     
+    leg=(leg1+leg2)/2
+    measures_front['Leg']=leg
+   
     
     # ************************Iseam************************
     iseam = abs(measures_front['Thigh']/3)
@@ -541,7 +544,7 @@ def measures_front_view(image):
                         x2 = x
                         y2 = y
 
-    neck = measures_front['Neck']
+    neck = measures_front['Neck']*2
     dist_shoulders = x2-x1
     measures_front['Shoulder']= (dist_shoulders-neck)/2
     coords_front['shoulders']= [x1, x2, y2]
@@ -549,7 +552,7 @@ def measures_front_view(image):
     """ imageOut = cv2.line(imageOut, (x1, y1), (x2, y2), (0, 255, 0), 1)
 
     cv2.imshow('shoulders', imageOut) """
-
+    """ 
     # **********************hips*************************
     # Cambiar a waist
     imageOut = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
@@ -601,12 +604,12 @@ def measures_front_view(image):
                     imageOut[y, x] = np.array([0, 0, 0])
                 if np.array_equal(image[y, x], np.array([192, 192, 192])) == True:
                     imageOut[y, x] = np.array([0, 0, 0])             
-
+    """
     """ imageOut = cv2.line(imageOut, (px1, py), (px2, py), (0, 255, 0), 3)
 
     cv2.imshow('hips', imageOut) """
-    measures_front['Waist']= px2 - px1
-    coords_front['hips']= [px1, px2, py]
+    """ measures_front['Waist']= px2 - px1
+    coords_front['hips']= [px1, px2, py] """
 
     measures_front=transform_pxl2cm(measures_front)
 
@@ -656,13 +659,13 @@ def measures_side_view(image):
                 if dist == 0:
                     dist = x2-x1
                     coords['Neck'] = [x1, x2, j]
-                    measures_side['Neck'] = dist
+                    measures_side['Neck'] = dist/2
                 else:
                     aux = x2-x1
                     if dist>aux:
                         dist = aux         
                         coords['Neck'] = [x1, x2, j]
-                        measures_side['Neck'] = dist
+                        measures_side['Neck'] = dist/2
         else:
             x1 = 0
             x2 = 0
@@ -687,10 +690,16 @@ def measures_side_view(image):
                             x1 = x
                         else:
                             x2 = x
+                    if y == yThigh:
+                        parte = 'Thigh'
+                        if x1 == 0:
+                            x1 = x
+                        else:
+                            x2 = x
                     
             if parte !='none':        
                 dist = x2 - x1           
-                measures_side[parte] = dist
+                measures_side[parte] = dist/2
                 coords[parte] = [x1, x2, y]    
 
     """ for c in coords:
@@ -716,7 +725,7 @@ def calculate_measures_views():
     side = measures_side
 
     side['Bicep']=front['Bicep']/2
-    side['Thigh']=front['Thigh']/2
+    front['Thigh']=side['Thigh']/2
 
     result = front
     
@@ -725,8 +734,9 @@ def calculate_measures_views():
         b = side[key]
 
         h=((a-b)/(a+b))**2
+        z=3*h   
 
-        res=round(3.1416 * (a+b)*(1+((3*h)/(10+((4-(3*h))**(1/2))))),2)
+        res=round(3.1416*(a+b)*(1 +(z / (10+((4-z)**(1/2))))),2)
 
         result[key]=res
     
@@ -786,6 +796,10 @@ def hconcat_resize_min(im_list, interpolation=cv2.INTER_CUBIC):
 def measures():
     global measures_cm
     global respImage
+    try:
+        os.mkdir('assets')
+    except OSError as e:
+        print('')
     images = {'front':None,'side':None}
     resp = {'front':None,'side':None}
     for view in images:
@@ -844,6 +858,7 @@ def measures():
     paths=['assets/bordes0.jpg','assets/bordes1.jpg','assets/out_front.png','assets/out_side.png','assets/out.png','person_front.png','person_side.png']
     for p in paths:
         os.remove(p)
+    os.rmdir('assets')
     #print(image)
 
     """cv2.waitKey(0)
