@@ -5,11 +5,11 @@ name = "pypi"
 
 [packages]
 flask = "*"
-gunicorn = "*"
-pillow = "*"
-opencv-python = "*"
 flask-cors = "*"
+pillow = "*"
 mediapipe = "*"
+gunicorn = "*"
+opencv-python-headless = "*"
 
 [dev-packages]
 
